@@ -17,21 +17,39 @@ export function GoldButton({
   large,
   className = "",
   arrow = true,
+  magnetic = false,
 }: {
   children: ReactNode;
   onClick?: () => void;
   large?: boolean;
   className?: string;
   arrow?: boolean;
+  magnetic?: boolean;
 }) {
+  const ref = useRef<HTMLButtonElement | null>(null);
+  const moveMagnet = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (!magnetic || event.pointerType === "touch" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const dx = event.clientX - (rect.left + rect.width / 2);
+    const dy = event.clientY - (rect.top + rect.height / 2);
+    event.currentTarget.style.translate = `${(dx * 0.12).toFixed(1)}px ${(dy * 0.16).toFixed(1)}px`;
+  };
+  const releaseMagnet = () => {
+    if (ref.current) ref.current.style.translate = "";
+  };
+
   return (
     <button
+      ref={ref}
+      type="button"
       onClick={onClick}
+      onPointerMove={magnetic ? moveMagnet : undefined}
+      onPointerLeave={magnetic ? releaseMagnet : undefined}
       className={`group relative inline-flex items-center justify-center gap-3 overflow-hidden border border-gold text-gold transition-colors duration-300 hover:text-bg ${
         large
           ? "px-10 py-4 text-[13px] tracking-[2.5px]"
           : "px-6 py-2.5 text-[12px] tracking-[2px]"
-      } rounded-lg font-sans font-medium uppercase ${className}`}
+      } rounded-lg font-sans font-medium uppercase ${magnetic ? "magnetic-cta" : ""} ${className}`}
     >
       <span
         aria-hidden

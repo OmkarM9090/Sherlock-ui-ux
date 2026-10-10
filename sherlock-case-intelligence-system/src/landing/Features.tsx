@@ -1,5 +1,10 @@
+import { Fragment, useLayoutEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useInView, useReducedMotion } from "../hooks";
 import { CountUp } from "../ui";
+
+gsap.registerPlugin(ScrollTrigger);
 
 /* ────────────────────────────────────────────────────────────────────
    Feature 1 visual — the evidence constellation
@@ -130,44 +135,59 @@ function ThreadVisual() {
    Feature 3 visual — gesture magnifying lens
 ────────────────────────────────────────────────────────────────────── */
 function LensVisual() {
+  const root = useRef<HTMLDivElement | null>(null);
+  const lens = useRef<HTMLDivElement | null>(null);
+
+  const moveLens = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "touch" || !root.current || !lens.current) return;
+    const bounds = root.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(bounds.width, event.clientX - bounds.left));
+    const y = Math.max(0, Math.min(bounds.height, event.clientY - bounds.top));
+    root.current.style.setProperty("--lens-x", `${x}px`);
+    root.current.style.setProperty("--lens-y", `${y}px`);
+    lens.current.style.transform = `translate3d(${x - 66}px, ${y - 66}px, 0)`;
+    lens.current.style.opacity = "1";
+  };
+  const hideLens = () => {
+    if (lens.current) lens.current.style.opacity = "0";
+  };
+
+  const dossier = (
+    <div className="lens-dossier">
+      <div className="flex items-center justify-between border-b border-line/80 pb-3">
+        <span className="font-mono text-[9px] tracking-[2px] text-gold">EVIDENCE REPORT // E-024</span>
+        <span className="font-mono text-[9px] tracking-[1.5px] text-mute">14 OCT 1897</span>
+      </div>
+      <h4 className="mt-4 font-display text-[25px] italic leading-none text-ink">The final signature</h4>
+      <p className="mt-2 font-mono text-[9px] tracking-[1.6px] text-mute">BLACKWOOD ESTATE · STUDY DESK</p>
+      <div className="mt-4 space-y-2.5">
+        <div className="h-[3px] w-full rounded-full bg-line" />
+        <div className="h-[3px] w-[91%] rounded-full bg-line" />
+        <div className="h-[3px] w-[79%] rounded-full bg-line" />
+        <div className="h-[3px] w-[95%] rounded-full bg-line" />
+      </div>
+      <div className="mt-5 flex items-end justify-between border-t border-line/80 pt-3">
+        <span className="font-mono text-[8px] tracking-[1.5px] text-mute">INK / PRESSURE ANALYSIS</span>
+        <span className="font-mono text-[16px] tracking-[1px] text-gold">94%</span>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-2xl border border-line bg-surface/60 p-8">
-      {/* blurred dossier beneath the lens */}
-      <div className="w-[260px] rounded-xl border border-line bg-elev p-4 opacity-70 blur-[1.5px]">
-        <div className="flex items-center justify-between">
-          <span className="font-mono text-[9px] tracking-[2px] text-gold">E-024</span>
-          <span className="font-mono text-[9px] tracking-[2px] text-mute">94%</span>
-        </div>
-        <div className="mt-3 space-y-2">
-          <div className="h-2 w-full rounded bg-line/50" />
-          <div className="h-2 w-5/6 rounded bg-line/50" />
-          <div className="h-2 w-4/6 rounded bg-line/50" />
-          <div className="h-2 w-full rounded bg-line/50" />
-          <div className="h-2 w-3/6 rounded bg-line/40" />
-        </div>
-        <div className="mt-4 h-16 rounded-lg bg-line/30" />
+    <div
+      ref={root}
+      onPointerMove={moveLens}
+      onPointerLeave={hideLens}
+      className="lens-visual relative flex h-full w-full items-center justify-center overflow-hidden rounded-2xl border border-line bg-surface/60 p-8"
+      aria-label="Move the pointer over the document to inspect its hidden details"
+    >
+      <div className="lens-document-soft">{dossier}</div>
+      <div className="lens-document-sharp" aria-hidden="true">{dossier}</div>
+      <div ref={lens} className="lens-visual__ring" aria-hidden="true">
+        <span className="lens-visual__readout">94% MATCH</span>
       </div>
-
-      {/* the lens */}
-      <div className="floaty pointer-events-none absolute left-[52%] top-[38%]">
-        <div
-          className="flex h-[110px] w-[110px] items-end justify-center rounded-full border-2 border-gold/60"
-          style={{
-            boxShadow:
-              "0 0 32px rgba(199,167,106,0.18), inset 0 0 0 1px rgba(9,10,12,0.6), inset 0 0 26px rgba(199,167,106,0.1)",
-            backdropFilter: "brightness(1.6) saturate(1.1)",
-            background: "rgba(199,167,106,0.04)",
-          }}
-        >
-          <span className="mb-2 rounded bg-bg/80 px-1.5 py-0.5 font-mono text-[8px] tracking-[1.5px] text-gold backdrop-blur-sm">
-            MAGNIFY
-          </span>
-        </div>
-        <div className="mx-auto h-10 w-[2px] bg-gradient-to-b from-gold/60 to-transparent" />
-      </div>
-
-      <span className="absolute bottom-4 left-5 font-mono text-[10px] tracking-[2px] text-mute">
-        OPEN PALM // POINT // PINCH
+      <span className="absolute bottom-4 left-5 font-mono text-[9px] tracking-[1.5px] text-mute">
+        MOVE TO EXAMINE // E-024
       </span>
     </div>
   );
@@ -195,36 +215,72 @@ function Feature({
   visual: React.ReactNode;
   flip?: boolean;
 }) {
-  const [ref, seen] = useInView<HTMLDivElement>(0.25);
+  const row = useRef<HTMLDivElement | null>(null);
   const reduced = useReducedMotion();
-  const anim = reduced
-    ? "opacity-100 translate-y-0"
-    : seen
-      ? "opacity-100 translate-y-0"
-      : "opacity-0 translate-y-8";
+
+  useLayoutEffect(() => {
+    const element = row.current;
+    if (!element || reduced) return;
+
+    const context = gsap.context(() => {
+      const q = gsap.utils.selector(element);
+      const kickerEl = q("[data-feature-kicker]");
+      const words = q("[data-feature-word]");
+      const visualEl = q("[data-feature-visual]");
+      const bodyEl = q("[data-feature-body]");
+      const pointEls = q("[data-feature-point]");
+      const noteEl = q("[data-feature-note]");
+
+      gsap.set(kickerEl, { autoAlpha: 0, x: -12 });
+      gsap.set(words, { autoAlpha: 0, y: 16, filter: "blur(3px)" });
+      gsap.set(visualEl, { autoAlpha: 0, x: flip ? 18 : -18, scale: 0.985 });
+      gsap.set(bodyEl, { autoAlpha: 0, y: 12, filter: "blur(2px)" });
+      gsap.set(pointEls, { autoAlpha: 0, x: -10 });
+      gsap.set(noteEl, { autoAlpha: 0, y: 8 });
+
+      const reveal = gsap.timeline({
+        scrollTrigger: {
+          trigger: element,
+          start: "top 82%",
+          toggleActions: "play none none reverse",
+        },
+      });
+      reveal
+        .to(kickerEl, { autoAlpha: 1, x: 0, duration: 0.38, ease: "power2.out" }, 0)
+        .to(visualEl, { autoAlpha: 1, x: 0, scale: 1, duration: 0.64, ease: "power3.out" }, 0.03)
+        .to(words, { autoAlpha: 1, y: 0, filter: "blur(0px)", duration: 0.42, stagger: 0.055, ease: "power2.out" }, 0.1)
+        .to(bodyEl, { autoAlpha: 1, y: 0, filter: "blur(0px)", duration: 0.48, ease: "power2.out" }, 0.43)
+        .to(pointEls, { autoAlpha: 1, x: 0, duration: 0.32, stagger: 0.065, ease: "power2.out" }, 0.6)
+        .to(noteEl, { autoAlpha: 1, y: 0, duration: 0.34, ease: "power2.out" }, 0.78);
+    }, element);
+
+    return () => context.revert();
+  }, [flip, reduced]);
 
   return (
-    <div
-      ref={ref}
-      className={`grid items-center gap-10 transition-all duration-700 ease-out lg:grid-cols-2 lg:gap-16 ${anim}`}
-    >
-      <div className={`h-[320px] lg:h-[380px] ${flip ? "lg:order-2" : ""}`}>
+    <div ref={row} className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+      <div data-feature-visual className={`h-[320px] lg:h-[380px] ${flip ? "lg:order-2" : ""}`}>
         {visual}
       </div>
       <div className={flip ? "lg:order-1" : ""}>
-        <span className="font-mono text-[11px] tracking-[3px] text-gold">
+        <span data-feature-kicker className="font-mono text-[11px] tracking-[3px] text-gold">
           {index} // {kicker}
         </span>
         <h3 className="mt-4 font-display text-[clamp(2rem,3.4vw,3rem)] font-medium leading-[1.1] tracking-[-1px] text-ink">
-          {title}
+          {title.split(/\s+/).map((word, wordIndex) => (
+            <Fragment key={`${word}-${wordIndex}`}>
+              {wordIndex > 0 ? " " : null}
+              <span data-feature-word className="feature-title-word">{word}</span>
+            </Fragment>
+          ))}
         </h3>
-        <p className="mt-5 max-w-[480px] font-sans text-[16px] leading-[1.75] text-mute">
+        <p data-feature-body className="mt-5 max-w-[480px] font-sans text-[16px] leading-[1.75] text-mute">
           {body}
         </p>
         {points && (
           <ul className="mt-7 space-y-3">
             {points.map((p) => (
-              <li key={p} className="flex items-center gap-3 font-sans text-[14px] text-ink/90">
+              <li key={p} data-feature-point className="flex items-center gap-3 font-sans text-[14px] text-ink/90">
                 <span className="block h-[6px] w-[6px] rotate-45 bg-gold/80" />
                 {p}
               </li>
@@ -232,7 +288,7 @@ function Feature({
           </ul>
         )}
         {note && (
-          <p className="mt-7 font-mono text-[11px] leading-relaxed tracking-[1.5px] text-mute">
+          <p data-feature-note className="mt-7 font-mono text-[11px] leading-relaxed tracking-[1.5px] text-mute">
             {note}
           </p>
         )}
@@ -253,6 +309,30 @@ const STATS: { value: number; label: string; suffix?: string }[] = [
 
 export default function Features() {
   const [statsRef, statsSeen] = useInView<HTMLDivElement>(0.4);
+  const quoteRef = useRef<HTMLDivElement | null>(null);
+  const reduced = useReducedMotion();
+
+  useLayoutEffect(() => {
+    const element = quoteRef.current;
+    if (!element || reduced) return;
+    const context = gsap.context(() => {
+      const q = gsap.utils.selector(element);
+      const words = q("[data-quote-word]");
+      const rule = q("[data-quote-rule]");
+      gsap.set(words, { autoAlpha: 0, y: 13, filter: "blur(2px)" });
+      gsap.set(rule, { scaleX: 0, transformOrigin: "50% 50%" });
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: element,
+          start: "top 86%",
+          toggleActions: "play none none reverse",
+        },
+      })
+        .to(words, { autoAlpha: 1, y: 0, filter: "blur(0px)", duration: 0.46, stagger: 0.11, ease: "power2.out" }, 0)
+        .to(rule, { scaleX: 1, duration: 0.48, ease: "power2.inOut" }, 0.12);
+    }, element);
+    return () => context.revert();
+  }, [reduced]);
 
   return (
     <>
@@ -322,9 +402,14 @@ export default function Features() {
               </div>
             ))}
           </div>
-          <p className="mx-auto mt-24 max-w-[640px] text-center font-display text-[clamp(1.6rem,3vw,2.1rem)] font-normal italic leading-[1.5] text-mute">
-            “The truth is hidden in the connections.”
-          </p>
+          <div ref={quoteRef} className="mx-auto mt-24 max-w-[720px] text-center">
+            <span data-quote-rule className="landing-quote-rule mx-auto mb-6 block h-px w-16 bg-gold/60" />
+            <blockquote className="font-display text-[clamp(1.6rem,3vw,2.1rem)] font-normal italic leading-[1.5] text-mute">
+              <span data-quote-word className="landing-quote-word">“The truth</span>{" "}
+              <span data-quote-word className="landing-quote-word">is hidden</span>{" "}
+              <span data-quote-word className="landing-quote-word">in the connections.”</span>
+            </blockquote>
+          </div>
         </div>
       </section>
 

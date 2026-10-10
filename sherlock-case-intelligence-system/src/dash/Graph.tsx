@@ -72,6 +72,15 @@ export default function Graph({
     return () => window.removeEventListener("sherlock:node", fn);
   }, [onSelect]);
 
+  useEffect(() => {
+    const fn = (event: Event) => {
+      const id = (event as CustomEvent<string | null>).detail;
+      setHoverId(id ?? null);
+    };
+    window.addEventListener("sherlock:node-hover", fn);
+    return () => window.removeEventListener("sherlock:node-hover", fn);
+  }, []);
+
   /* entrance — nodes pop, threads draw */
   useEffect(() => {
     if (!animate) return;
@@ -103,7 +112,8 @@ export default function Graph({
   return (
     <div
       ref={root}
-      className="relative overflow-hidden rounded-2xl border border-line bg-surface"
+      data-spotlight
+      className="spotlight-card relative overflow-hidden rounded-2xl border border-line bg-surface"
     >
       {/* header */}
       <div className="flex items-center justify-between px-6 pt-5">
@@ -173,8 +183,18 @@ export default function Graph({
                 }}
                 onMouseEnter={() => setHoverId(n.id)}
                 onMouseLeave={() => setHoverId(null)}
+                onFocus={() => setHoverId(n.id)}
+                onBlur={() => setHoverId(null)}
                 onClick={() => onSelect(n.id)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onSelect(n.id);
+                  }
+                }}
+                tabIndex={0}
                 role="button"
+                aria-pressed={selected}
                 aria-label={`${n.name} — ${n.sub}`}
               >
                 {n.kind === "case" && (
@@ -225,8 +245,9 @@ export default function Graph({
                   fontFamily="Inter, sans-serif"
                   fontWeight={500}
                   letterSpacing={1.1}
-                  fill={lit || selected ? "#F2EEE5" : "#8b8c8a"}
-                  style={{ transition: "fill .25s ease" }}
+                  fill={lit || selected || hovered ? "#F2EEE5" : "#8b8c8a"}
+                  opacity={selected || hovered ? 1 : activeId ? (lit ? 0.9 : 0.18) : 0.78}
+                  style={{ transition: "fill .25s ease, opacity .25s ease" }}
                   pointerEvents="none"
                 >
                   {n.label}

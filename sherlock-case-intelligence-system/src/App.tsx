@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import Landing from "./landing/Landing";
 import Dashboard from "./dash/Dashboard";
@@ -11,6 +11,37 @@ export default function App() {
   const overlay = useRef<HTMLDivElement | null>(null);
   const busy = useRef(false);
   const reduced = useReducedMotion();
+
+  // A single delegated pointer listener drives the radial card light without
+  // introducing per-card React state or frame-by-frame renders.
+  useEffect(() => {
+    let active: HTMLElement | null = null;
+    const onPointerMove = (event: PointerEvent) => {
+      if (event.pointerType === "touch" || !(event.target instanceof Element)) return;
+      const next = event.target.closest<HTMLElement>(".spotlight-card");
+      if (active !== next) {
+        active?.style.removeProperty("--spot-x");
+        active?.style.removeProperty("--spot-y");
+        active = next;
+      }
+      if (!active) return;
+      const rect = active.getBoundingClientRect();
+      active.style.setProperty("--spot-x", `${event.clientX - rect.left}px`);
+      active.style.setProperty("--spot-y", `${event.clientY - rect.top}px`);
+    };
+    const clear = () => {
+      active?.style.removeProperty("--spot-x");
+      active?.style.removeProperty("--spot-y");
+      active = null;
+    };
+    document.addEventListener("pointermove", onPointerMove, { passive: true });
+    window.addEventListener("blur", clear);
+    return () => {
+      document.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("blur", clear);
+      clear();
+    };
+  }, []);
 
   /* ── ENTER THE CASE: screen dims, gold thread is pulled across ── */
   const enterCase = useCallback(() => {

@@ -213,7 +213,7 @@ export default function EvidenceModal({
           </ul>
 
           <div className="mt-auto pt-7">
-            <GoldButton onClick={onTrace} className="w-full sm:w-auto">
+            <GoldButton onClick={onTrace} magnetic className="w-full sm:w-auto">
               Trace Connections
             </GoldButton>
           </div>
