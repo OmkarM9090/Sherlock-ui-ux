@@ -253,7 +253,7 @@ export default function Thread({
             3 evidence items converge on the same 17-minute window
           </p>
           <div data-t="cta" className="pointer-events-auto relative mt-8 flex flex-wrap items-center justify-center gap-4" style={{ pointerEvents: "auto" }}>
-            <GoldButton onClick={onDeduce}>View Deduction</GoldButton>
+            <GoldButton onClick={onDeduce} magnetic>View Deduction</GoldButton>
             <GhostButton onClick={requestClose}>Return to Board</GhostButton>
           </div>
         </div>

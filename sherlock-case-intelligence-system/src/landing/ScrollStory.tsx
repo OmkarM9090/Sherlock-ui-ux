@@ -128,6 +128,8 @@ export default function ScrollStory({ onEnter }: { onEnter: () => void }) {
         q(".story-title").forEach((el, i) =>
           gsap.set(el, { autoAlpha: i === 3 ? 1 : 0 })
         );
+        gsap.set(q(".trace-title"), { autoAlpha: 0 });
+        gsap.set(q(".trace-underline"), { scaleX: 1 });
         gsap.set(q(".story-card"), { autoAlpha: 0 });
         gsap.set(q("path.thread-line"), { autoAlpha: 0 });
         gsap.set(q(".case-board"), { autoAlpha: 1, scale: 1 });
@@ -138,6 +140,9 @@ export default function ScrollStory({ onEnter }: { onEnter: () => void }) {
       }
 
       gsap.set(q(".case-board"), { autoAlpha: 0, scale: 0.72 });
+      gsap.set(q(".trace-title"), { autoAlpha: 0, y: 34 });
+      gsap.set(q(".trace-word"), { autoAlpha: 0, y: 22, clipPath: "inset(100% 0% 0% 0%)" });
+      gsap.set(q(".trace-underline"), { scaleX: 0, transformOrigin: "left center" });
       gsap.set(q(".story-cta"), { autoAlpha: 0, y: 22 });
 
       const tl = gsap.timeline({
@@ -145,93 +150,110 @@ export default function ScrollStory({ onEnter }: { onEnter: () => void }) {
         scrollTrigger: {
           trigger: section.current,
           start: "top top",
-          end: "+=3400",
+          end: "+=4300",
           scrub: 1,
           pin: true,
           anticipatePin: 1,
         },
       });
 
-      /* ── PHASE 1 · THE EVIDENCE ── */
+      /* ── SECTION 02 · EVERY CLUE LEAVES A TRACE ── */
       tl.fromTo(
-        q("[data-title='1']"),
+        q(".trace-title"),
         { autoAlpha: 0, y: 34 },
         { autoAlpha: 1, y: 0, duration: 0.7 },
         0
-      ).fromTo(
-        q(".ev-card"),
-        { autoAlpha: 0, y: 90 },
-        { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.28 },
-        0.35
-      );
+      )
+        .fromTo(
+          q(".trace-word"),
+          { autoAlpha: 0, y: 22, clipPath: "inset(100% 0% 0% 0%)" },
+          { autoAlpha: 1, y: 0, clipPath: "inset(0% 0% -10% 0%)", duration: 0.68, stagger: 0.12, ease: "expo.out" },
+          0.12
+        )
+        .to(q(".trace-underline"), { scaleX: 1, duration: 0.72, ease: "power2.inOut" }, 0.76)
+        .to(q(".trace-title"), { autoAlpha: 0, y: -24, duration: 0.45 }, 1.53)
 
-      /* ── PHASE 2 · THE SUSPECTS ── */
-      tl.to(q("[data-title='1']"), { autoAlpha: 0, y: -26, duration: 0.5 }, 2.6)
+        /* ── SECTION 03 · EVIDENCE arrives from separate depths ── */
+        .fromTo(
+          q("[data-title='1']"),
+          { autoAlpha: 0, y: 34 },
+          { autoAlpha: 1, y: 0, duration: 0.62 },
+          1.68
+        )
+        .fromTo(
+          q(".ev-card"),
+          { autoAlpha: 0, x: (i) => [-92, 42, 108, 154][i % 4], y: (i) => [92, 142, 72, 124][i % 4], z: -230, rotationX: 8, rotationY: (i) => (i % 2 ? -9 : 8), scale: 0.86 },
+          { autoAlpha: 1, x: 0, y: 0, z: 0, rotationX: 0, rotationY: 0, scale: 1, duration: 0.92, stagger: 0.27, ease: "power3.out" },
+          2.0
+        );
+
+      /* ── SECTION 04 · SUSPECTS are entered into the record ── */
+      tl.to(q("[data-title='1']"), { autoAlpha: 0, y: -26, duration: 0.48 }, 4.08)
         .fromTo(
           q("[data-title='2']"),
           { autoAlpha: 0, y: 34 },
-          { autoAlpha: 1, y: 0, duration: 0.6 },
-          2.75
+          { autoAlpha: 1, y: 0, duration: 0.58 },
+          4.25
         )
         .fromTo(
           q(".su-card"),
-          { autoAlpha: 0, y: 70, scale: 0.92 },
-          { autoAlpha: 1, y: 0, scale: 1, duration: 0.8, stagger: 0.28 },
-          3.0
+          { autoAlpha: 0, x: (i) => (i % 2 ? 130 : -120), y: 76, z: -170, rotationY: (i) => (i % 2 ? 10 : -10), scale: 0.91 },
+          { autoAlpha: 1, x: 0, y: 0, z: 0, rotationY: 0, scale: 1, duration: 0.78, stagger: 0.25, ease: "power3.out" },
+          4.52
         );
 
-      /* ── PHASE 3 · THE CONNECTIONS ── */
-      tl.to(q("[data-title='2']"), { autoAlpha: 0, y: -26, duration: 0.5 }, 4.6)
+      /* ── SECTION 05 · RED THREAD connects the testimony ── */
+      tl.to(q("[data-title='2']"), { autoAlpha: 0, y: -26, duration: 0.48 }, 6.05)
         .fromTo(
           q("[data-title='3']"),
           { autoAlpha: 0, y: 34 },
-          { autoAlpha: 1, y: 0, duration: 0.6 },
-          4.75
+          { autoAlpha: 1, y: 0, duration: 0.58 },
+          6.22
         )
         .to(
           q("path.thread-line"),
-          { strokeDashoffset: 0, duration: 0.85, stagger: 0.3, ease: "power2.inOut" },
-          5.1
+          { strokeDashoffset: 0, duration: 0.82, stagger: 0.28, ease: "power2.inOut" },
+          6.55
         )
         .fromTo(
           q("[data-pattern]"),
-          { autoAlpha: 0 },
-          { autoAlpha: 1, duration: 0.5 },
-          6.9
+          { autoAlpha: 0, y: 10 },
+          { autoAlpha: 1, y: 0, duration: 0.5 },
+          8.22
         );
 
-      /* ── PHASE 4 · THE CASE BOARD ── */
+      /* ── SECTION 06 · PATTERN DETECTED resolves into the CASE BOARD ── */
       tl.to(
         q(".story-scatter"),
         { autoAlpha: 0, scale: 0.86, y: -22, duration: 0.8, ease: "power2.in" },
-        8.0
+        9.18
       )
-        .to(q("[data-title='3']"), { autoAlpha: 0, y: -24, duration: 0.5 }, 8.0)
+        .to(q("[data-title='3']"), { autoAlpha: 0, y: -24, duration: 0.48 }, 9.18)
         .to(
           q(".case-board"),
           { autoAlpha: 1, scale: 1, duration: 0.9, ease: "expo.out" },
-          8.5
+          9.68
         )
         .fromTo(
           q(".mini-edge"),
           { autoAlpha: 1 },
-          { strokeDashoffset: 0, duration: 0.6, stagger: 0.12 },
-          8.6
+          { strokeDashoffset: 0, duration: 0.58, stagger: 0.12 },
+          9.78
         )
         .fromTo(
           q(".mini-node"),
           { autoAlpha: 0, scale: 0 },
           { autoAlpha: 1, scale: 1, duration: 0.5, stagger: 0.08, ease: "power3.out" },
-          8.7
+          9.88
         )
         .fromTo(
           q("[data-title='4']"),
           { autoAlpha: 0, y: 26 },
           { autoAlpha: 1, y: 0, duration: 0.6 },
-          9.5
+          10.68
         )
-        .to(q(".story-cta"), { autoAlpha: 1, y: 0, duration: 0.6 }, 10.0)
-        .to({}, { duration: 0.6 }, 10.6); // dwell
+        .to(q(".story-cta"), { autoAlpha: 1, y: 0, duration: 0.6 }, 11.18)
+        .to({}, { duration: 0.6 }, 11.84); // a held final tableau before entering the case
     }, section);
 
     return () => ctx.revert();
@@ -261,6 +283,21 @@ export default function ScrollStory({ onEnter }: { onEnter: () => void }) {
         className="relative"
         style={{ width: W, height: H, transform: `scale(${scale})` }}
       >
+        {/* section 02 — editorial reveal before the physical exhibits */}
+        <div className="trace-title pointer-events-none absolute inset-x-0 top-0 text-center opacity-0">
+          <span className="font-mono text-[10px] tracking-[4px] text-gold">SECTION 02 // THE METHOD</span>
+          <h3 className="mt-2 font-display text-[clamp(2.2rem,4vw,3rem)] font-medium leading-[1.02] tracking-[-1.3px] text-ink">
+            <span className="trace-word inline-block">EVERY</span>{" "}
+            <span className="trace-word inline-block">CLUE</span>{" "}
+            <span className="trace-word inline-block">LEAVES</span>{" "}
+            <span className="trace-word inline-block">A</span>{" "}
+            <span className="relative inline-block text-gold2">
+              <span className="trace-word inline-block">TRACE.</span>
+              <span className="trace-underline absolute -bottom-1 left-0 h-px w-full bg-gold/80" />
+            </span>
+          </h3>
+        </div>
+
         {/* phase titles */}
         {[
           { n: 1, t: "THE EVIDENCE" },
@@ -282,7 +319,7 @@ export default function ScrollStory({ onEnter }: { onEnter: () => void }) {
         ))}
 
         {/* scattered layer */}
-        <div className="story-scatter absolute inset-0">
+        <div className="story-scatter absolute inset-0" style={{ perspective: "1500px", transformStyle: "preserve-3d" }}>
           {/* thread svg */}
           <svg
             className="absolute inset-0"
@@ -392,7 +429,7 @@ export default function ScrollStory({ onEnter }: { onEnter: () => void }) {
           >
             <span className="pulse-dot mr-2 inline-block h-[6px] w-[6px] rounded-full bg-gold" />
             <span className="font-mono text-[12px] tracking-[3px] text-gold">
-              PATTERN EMERGING
+              PATTERN DETECTED
             </span>
           </div>
         </div>

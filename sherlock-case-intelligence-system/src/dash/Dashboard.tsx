@@ -208,7 +208,7 @@ export default function Dashboard({ onExit }: { onExit: () => void }) {
               >
                 <Bell size={16} strokeWidth={1.6} />
               </button>
-              <GoldButton onClick={startThread} className="hidden sm:inline-flex">
+              <GoldButton onClick={startThread} magnetic className="hidden sm:inline-flex">
                 Connect Evidence
               </GoldButton>
             </div>
@@ -283,7 +283,8 @@ export default function Dashboard({ onExit }: { onExit: () => void }) {
                   {CONTRADICTIONS.map((c) => (
                     <div
                       key={c.id}
-                      className="rounded-xl border border-line border-l-[3px] border-l-crimson bg-surface p-5"
+                      data-spotlight
+                      className="spotlight-card spotlight-card--alert rounded-xl border border-line border-l-[3px] border-l-crimson bg-surface p-5"
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-mono text-[10px] tracking-[2px] text-crimson">

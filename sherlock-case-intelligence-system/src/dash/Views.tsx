@@ -26,52 +26,66 @@ export function CasesView({
   onSealed: (id: string) => void;
 }) {
   return (
-    <div data-enter className="overflow-hidden rounded-2xl border border-line bg-surface">
-      <div className="flex items-center justify-between border-b border-line/60 px-7 py-5">
-        <h3 className="font-sans text-[15px] font-semibold text-ink">CASE REGISTRY</h3>
-        <span className="font-mono text-[10px] tracking-[2px] text-mute">
-          4 FILES • 1 ACTIVE
-        </span>
+    <div data-enter>
+      <div className="mb-5 flex items-end justify-between gap-4">
+        <div>
+          <p className="font-mono text-[10px] tracking-[2.5px] text-gold">ARCHIVE INDEX // 1897</p>
+          <h3 className="mt-2 font-display text-[30px] font-medium text-ink">Case registry</h3>
+        </div>
+        <span className="font-mono text-[10px] tracking-[2px] text-mute">4 FILES · 1 ACTIVE</span>
       </div>
-      <ul>
-        {REGISTRY.map((c, i) => {
+      <div className="grid gap-3">
+        {REGISTRY.map((c) => {
           const active = c.status === "ACTIVE";
           return (
-            <li key={c.id}>
-              <button
-                onClick={() => (active ? onOpenActive() : onSealed(c.id))}
-                className={`group flex w-full flex-wrap items-center gap-x-8 gap-y-2 px-7 py-6 text-left transition-colors duration-200 hover:bg-white/[0.02] ${
-                  i < REGISTRY.length - 1 ? "border-b border-line/50" : ""
-                } ${active ? "bg-gold/[0.04]" : ""}`}
-              >
-                <span className="flex items-center gap-3 font-mono text-[12px] tracking-[1.5px] text-gold">
+            <button
+              key={c.id}
+              data-spotlight
+              onClick={() => (active ? onOpenActive() : onSealed(c.id))}
+              className={`spotlight-card case-file group w-full rounded-xl border px-5 py-5 text-left sm:px-7 sm:py-6 ${active ? "border-gold/25 bg-gold/[0.035]" : "border-line"}`}
+            >
+              <span className="case-file__scan" aria-hidden="true" />
+              <div className="case-file__meta flex flex-wrap items-center justify-between gap-3">
+                <span className="flex items-center gap-3 font-mono text-[10px] tracking-[2px] text-gold sm:text-[11px]">
                   {active && <span className="pulse-dot h-[6px] w-[6px] rounded-full bg-gold" />}
-                  {c.id}
+                  CASE #{c.id}
                 </span>
-                <span className="min-w-[220px] flex-1 font-sans text-[15.5px] font-semibold tracking-[0.5px] text-ink">
-                  {c.title}
+                <Tag tone={active ? "gold" : c.status === "RESOLVED" ? "green" : "mute"}>{c.status}</Tag>
+              </div>
+              <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <h4 className="font-sans text-[16px] font-semibold tracking-[0.7px] text-ink sm:text-[18px]">{c.title}</h4>
+                  <p className="mt-1.5 font-mono text-[9px] tracking-[1.5px] text-mute">OPENED {c.opened}</p>
+                </div>
+                <span className="case-file__open inline-flex items-center gap-2 font-mono text-[9px] tracking-[1.7px] text-gold">
+                  {active ? "OPEN CASE FILE" : "INSPECT ARCHIVE"}
+                  <ArrowUpRight size={13} strokeWidth={1.7} />
                 </span>
-                <span className="hidden font-mono text-[10px] tracking-[1.5px] text-mute md:block">
-                  OPENED {c.opened}
-                </span>
-                <Tag tone={active ? "gold" : c.status === "RESOLVED" ? "green" : "mute"}>
-                  {c.status}
-                </Tag>
-                {c.conf > 0 && (
-                  <span className="hidden font-mono text-[11px] tracking-[1px] text-mute lg:block">
-                    {c.conf}%
-                  </span>
-                )}
-                <ArrowUpRight
-                  size={15}
-                  strokeWidth={1.6}
-                  className="text-mute transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-gold"
-                />
-              </button>
-            </li>
+              </div>
+              {active ? (
+                <div className="mt-5 grid grid-cols-3 border-t border-line/70 pt-4 sm:max-w-[430px]">
+                  {[
+                    ["27", "EVIDENCE"],
+                    ["05", "SUSPECTS"],
+                    [`${c.conf}%`, "CONFIDENCE"],
+                  ].map(([value, label]) => (
+                    <span key={label} className="flex flex-col gap-1.5">
+                      <span className="font-sans text-[18px] font-semibold tracking-tight text-ink">{value}</span>
+                      <span className="font-mono text-[8px] tracking-[1.4px] text-mute">{label}</span>
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-5 flex items-center gap-2 border-t border-line/60 pt-4 font-mono text-[9px] tracking-[1.5px] text-mute">
+                  {c.conf > 0 ? `${c.conf}% DEDUCTION CONFIDENCE` : "CONTENTS SEALED"}
+                  <span className="h-px w-7 bg-line" />
+                  {c.status === "RESOLVED" ? "FILED IN ARCHIVE" : "RESTRICTED ACCESS"}
+                </div>
+              )}
+            </button>
           );
         })}
-      </ul>
+      </div>
     </div>
   );
 }
@@ -116,7 +130,8 @@ export function EvidenceView({
             <button
               key={e.id}
               onClick={() => onOpen(e.id)}
-              className="group overflow-hidden rounded-xl border border-line bg-surface text-left shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1 hover:border-gold/30 hover:shadow-[var(--shadow-elev)]"
+              data-spotlight
+              className="spotlight-card evidence-file-card group overflow-hidden rounded-xl border border-line bg-surface text-left shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1 hover:border-gold/30 hover:shadow-[var(--shadow-elev)]"
             >
               <div className="relative aspect-[4/3] overflow-hidden bg-elev">
                 {e.img ? (
@@ -173,7 +188,8 @@ export function SuspectsView({ onInspect }: { onInspect: (id: string) => void })
       {SUSPECTS.map((s) => (
         <article
           key={s.id}
-          className="group flex flex-col rounded-xl border border-line bg-surface p-6 shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1 hover:border-gold/25"
+          data-spotlight
+          className="spotlight-card group flex flex-col rounded-xl border border-line bg-surface p-6 shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1 hover:border-gold/25"
         >
           <div className="flex items-start justify-between">
             <span

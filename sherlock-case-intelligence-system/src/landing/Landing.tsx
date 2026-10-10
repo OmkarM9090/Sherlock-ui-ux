@@ -7,7 +7,7 @@ export default function Landing({ onEnter }: { onEnter: () => void }) {
   return (
     <>
       <Navbar onEnter={onEnter} />
-      <main>
+      <main className="landing-filmgrade">
         <Hero onEnter={onEnter} />
         <ScrollStory onEnter={onEnter} />
         <Features />
