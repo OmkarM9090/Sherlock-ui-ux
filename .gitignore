@@ -1,0 +1,10 @@
+# Node / Vite artifacts
+node_modules/
+dist/
+.vite/
+coverage/
+
+# Local visual inspection and temporary artifacts
+.inspection/
+*.tsbuildinfo
+.DS_Store
